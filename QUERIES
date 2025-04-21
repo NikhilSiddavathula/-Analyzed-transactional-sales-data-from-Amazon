@@ -1,0 +1,215 @@
+QUESTIONS:
+
+1.What is the count of distinct cities in the dataset?
+
+2.For each branch, what is the corresponding city?
+
+3.What is the count of distinct product lines in the dataset?
+
+4.Which payment method occurs most frequently?
+
+5.Which product line has the highest sales?
+
+6.How much revenue is generated each month?
+
+7.In which month did the cost of goods sold reach its peak?
+
+8.Which product line generated the highest revenue?
+
+9.In which city was the highest revenue recorded?
+
+10.Which product line incurred the highest Value Added Tax?
+
+11.For each product line, add a column indicating "Good" if its sales are above average, otherwise "Bad."
+
+12.Identify the branch that exceeded the average number of products sold.
+
+13.Which product line is most frequently associated with each gender?
+
+14.Calculate the average rating for each product line.
+
+15.Count the sales occurrences for each time of day on every weekday.
+
+16.Identify the customer type contributing the highest revenue.
+
+17.Determine the city with the highest VAT percentage.
+
+18.Identify the customer type with the highest VAT payments.
+
+19.What is the count of distinct customer types in the dataset?
+
+20.What is the count of distinct payment methods in the dataset?
+
+21.Which customer type occurs most frequently?
+
+22.Identify the customer type with the highest purchase frequency.
+
+23.Determine the predominant gender among customers.
+
+24.Examine the distribution of genders within each branch.
+
+25.Identify the time of day when customers provide the most ratings.
+
+26.Determine the time of day with the highest customer ratings for each branch.
+
+27.Identify the day of the week with the highest average ratings.
+
+28.Determine the day of the week with the highest average ratings for each branch.
+
+
+SELECT * FROM amazon_data_capstone_project.amazon_sales;
+
+-- RENAME TABLE `amazon (1)` TO amazon_sales;
+
+-- 1. Count of distinct cities:
+SELECT COUNT(DISTINCT City) FROM amazon_data_capstone_project.amazon_sales;
+
+
+-- 2. For each branch, what is the corresponding city?
+SELECT Branch, City FROM amazon_data_capstone_project.amazon_sales GROUP BY Branch, City;
+
+
+-- 3. Count of distinct product lines:
+SELECT COUNT(DISTINCT `Product line`) FROM amazon_data_capstone_project.amazon_sales;
+
+
+-- 4. Most frequent payment method:
+SELECT Payment, COUNT(*) AS Count FROM amazon_data_capstone_project.amazon_sales GROUP BY Payment ORDER BY Count DESC LIMIT 1;
+
+
+-- 5. Product line with highest sales:
+SELECT `Product line`, SUM(Total) AS Sales FROM amazon_data_capstone_project.amazon_sales GROUP BY `Product line` ORDER BY Sales DESC LIMIT 1;
+
+
+-- 6. Revenue generated each month:
+SELECT MONTH(Date) AS Month, SUM(Total) AS Revenue FROM amazon_data_capstone_project.amazon_sales GROUP BY MONTH(Date) ORDER BY Month;
+
+
+-- 7. Month with peak cost of goods sold (COGS):
+SELECT MONTH(Date) AS Month, SUM(cogs) AS Total_COGS FROM amazon_data_capstone_project.amazon_sales GROUP BY MONTH(Date) ORDER BY Total_COGS DESC LIMIT 1;
+
+
+-- 8. Product line generating highest revenue:
+SELECT `Product line`, SUM(Total) AS Revenue FROM amazon_data_capstone_project.amazon_sales GROUP BY `Product line` ORDER BY Revenue DESC LIMIT 1;
+
+
+-- 9. City with highest revenue:
+SELECT City, SUM(Total) AS Revenue FROM amazon_data_capstone_project.amazon_sales GROUP BY City ORDER BY Revenue DESC LIMIT 1;
+
+
+-- 10. Product line with highest VAT (Tax 5%):
+SELECT `Product line`, SUM(`Tax 5%`) AS VAT FROM amazon_data_capstone_project.amazon_sales GROUP BY `Product line` ORDER BY VAT DESC LIMIT 1;
+
+
+-- 11. Sales quality by product line (Good/Bad):
+SELECT `Product line`, 
+       CASE 
+           WHEN AVG(Total) > (SELECT AVG(Total) FROM amazon_data_capstone_project.amazon_sales) THEN 'Good'
+           ELSE 'Bad'
+       END AS Sales_Quality
+FROM sales_data
+GROUP BY `Product line`;
+
+
+-- 12. Branches exceeding average quantity sold:
+SELECT Branch, AVG(Quantity) AS Avg_Qty
+FROM sales_data
+GROUP BY Branch
+HAVING Avg_Qty > (SELECT AVG(Quantity) FROM amazon_data_capstone_project.amazon_sales);
+
+
+-- 13. Product line most frequently bought by gender:
+SELECT Gender, `Product line`, COUNT(*) AS Count
+FROM amazon_data_capstone_project.amazon_sales
+GROUP BY Gender, `Product line`
+ORDER BY Gender, Count DESC;
+
+
+-- 14. Average rating for each product line:
+SELECT `Product line`, AVG(Rating) AS Avg_Rating FROM amazon_data_capstone_project.amazon_sales GROUP BY `Product line`;
+
+
+-- 15. Count sales for each time of day on every weekday:
+SELECT DAYNAME(Date) AS Weekday,
+       CASE 
+           WHEN HOUR(Time) BETWEEN 5 AND 11 THEN 'Morning'
+           WHEN HOUR(Time) BETWEEN 12 AND 16 THEN 'Afternoon'
+           ELSE 'Evening'
+       END AS TimeOfDay,
+       COUNT(*) AS Count
+FROM amazon_data_capstone_project.amazon_sales
+GROUP BY Weekday, TimeOfDay;
+
+
+-- 16. Customer type contributing the highest revenue:
+SELECT `Customer type`, SUM(Total) AS Revenue FROM amazon_data_capstone_project.amazon_sales GROUP BY `Customer type` ORDER BY Revenue DESC LIMIT 1;
+
+
+-- 17. City with highest average VAT:
+SELECT City, AVG(`Tax 5%`) AS Avg_VAT FROM amazon_data_capstone_project.amazon_sales GROUP BY City ORDER BY Avg_VAT DESC LIMIT 1;
+
+
+-- 18. Customer type with highest VAT payments:
+SELECT `Customer type`, SUM(`Tax 5%`) AS VAT FROM amazon_data_capstone_project.amazon_sales GROUP BY `Customer type` ORDER BY VAT DESC LIMIT 1;
+
+
+-- 19. Count of distinct customer types:
+SELECT COUNT(DISTINCT `Customer type`) FROM amazon_data_capstone_project.amazon_sales;
+
+
+-- 20. Count of distinct payment methods:
+SELECT COUNT(DISTINCT Payment) FROM amazon_data_capstone_project.amazon_sales;
+
+
+-- 21. Most frequent customer type:
+SELECT `Customer type`, COUNT(*) AS Count FROM amazon_data_capstone_project.amazon_sales GROUP BY `Customer type` ORDER BY Count DESC LIMIT 1;
+
+
+-- 22. Customer type with highest purchase frequency:
+SELECT `Customer type`, COUNT(*) AS Frequency FROM amazon_data_capstone_project.amazon_sales GROUP BY `Customer type` ORDER BY Frequency DESC LIMIT 1;
+
+
+-- 23. Predominant gender among customers:
+SELECT Gender, COUNT(*) AS Count FROM amazon_data_capstone_project.amazon_sales GROUP BY Gender ORDER BY Count DESC LIMIT 1;
+
+
+-- 24. Gender distribution in each branch:
+SELECT Branch, Gender, COUNT(*) AS Count FROM amazon_data_capstone_project.amazon_sales GROUP BY Branch, Gender;
+
+
+-- 25. Time of day when most ratings are given:
+SELECT 
+  CASE 
+    WHEN HOUR(Time) BETWEEN 5 AND 11 THEN 'Morning'
+    WHEN HOUR(Time) BETWEEN 12 AND 16 THEN 'Afternoon'
+    ELSE 'Evening'
+  END AS TimeOfDay,
+  COUNT(*) AS RatingCount
+FROM amazon_data_capstone_project.amazon_sales
+GROUP BY TimeOfDay
+ORDER BY RatingCount DESC LIMIT 1;
+
+
+-- 26. Time of day with highest ratings per branch:
+SELECT Branch, 
+       CASE 
+           WHEN HOUR(Time) BETWEEN 5 AND 11 THEN 'Morning'
+           WHEN HOUR(Time) BETWEEN 12 AND 16 THEN 'Afternoon'
+           ELSE 'Evening'
+       END AS TimeOfDay,
+       AVG(Rating) AS AvgRating
+FROM amazon_data_capstone_project.amazon_sales
+GROUP BY Branch, TimeOfDay;
+
+
+-- 27. Day of the week with highest average rating:
+SELECT DAYNAME(Date) AS Weekday, AVG(Rating) AS AvgRating FROM amazon_data_capstone_project.amazon_sales GROUP BY Weekday ORDER BY AvgRating DESC LIMIT 1;
+
+
+-- 28. Day of the week with highest average rating per branch:
+SELECT Branch, DAYNAME(Date) AS Weekday, AVG(Rating) AS AvgRating
+FROM amazon_data_capstone_project.amazon_sales
+GROUP BY Branch, Weekday;
+
+
+
